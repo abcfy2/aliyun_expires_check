@@ -6,7 +6,6 @@ import hmac
 import os
 import uuid
 from hashlib import sha1
-from json import JSONDecodeError
 from urllib.parse import urlencode, quote
 
 import requests
@@ -26,7 +25,7 @@ def percent_encode(value):
 
 def gen_signature(params):
     sorted_params = sorted(params.items(), key=lambda x: x[0])
-    query_string = urlencode(sorted_params, quote_via=quote)
+    query_string = urlencode(sorted_params)
     string_to_sign = 'GET&%2F&' + percent_encode(query_string)
     h = hmac.new('{}&'.format(__access_key_secret).encode('UTF-8'),
                  string_to_sign.encode('UTF-8'), sha1)
@@ -56,7 +55,7 @@ def request_ecs_api(params):
 
     try:
         return r.json()
-    except JSONDecodeError:
+    except Exception:
         return {}
 
 
