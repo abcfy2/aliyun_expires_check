@@ -3,17 +3,15 @@
 import base64
 import datetime
 import hmac
+import http.client
+import json
 import os
 import uuid
 from hashlib import sha1
 from urllib.parse import urlencode, quote
 
-import requests
-
-__session = requests.session()
 __access_key_id = os.getenv('ACCESS_KEY_ID')
 __access_key_secret = os.getenv('ACCESS_KEY_SECRET')
-__esc_endpoint = 'https://ecs.aliyuncs.com'
 expired_days = 15
 
 
@@ -48,14 +46,17 @@ def request_ecs_api(params):
     }
     request_params.update(params)
     signature = gen_signature(request_params)
-
     request_params['Signature'] = signature
 
-    r = __session.get(__esc_endpoint, params=request_params)
+    params_str = urlencode(request_params)
+    conn = http.client.HTTPSConnection('ecs.aliyuncs.com', timeout=10)
+    conn.request('GET', '/?' + params_str)
+    res = conn.getresponse()
+    result = res.read()
 
-    try:
-        return r.json()
-    except Exception:
+    if result:
+        return json.loads(result)
+    else:
         return {}
 
 
