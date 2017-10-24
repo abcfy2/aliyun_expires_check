@@ -55,7 +55,7 @@ def request_ecs_api(params):
     result = res.read()
 
     if result:
-        return json.loads(result)
+        return json.loads(result.decode('UTF-8'))
     else:
         return {}
 
